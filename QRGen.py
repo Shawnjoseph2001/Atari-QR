@@ -46,7 +46,6 @@ def open_a26_file():
 def play_a26_qr():
     window.import_qr = tk.filedialog.askopenfilename(title="Select file")
     img = decode(Image.open(window.import_qr))
-    print(img)
 
 
 window.title('A2')
