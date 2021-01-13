@@ -1,11 +1,12 @@
 # Python program to generate QR code
-import cv2
-import qrcode
+import pyqrcode
+from pyqrcode import QRCode
 import os
 from tkmacosx import Button
 from tkinter import *
 from tkinter import filedialog
 from PIL import ImageTk
+import zxing
 
 current_a26_file = ""
 window = Tk()
@@ -26,30 +27,33 @@ def open_a26_file():
         if os.path.getsize(current_a26_file) > 3023872:
             print("This file is too big. Only Atari 2600 games designed for a 2KB cartridge will work.")
         else:
-            atari_file = open(current_a26_file, mode='rb').read()
-            my_qr = qrcode.QRCode(
-                version=40,
-                error_correction=qrcode.constants.ERROR_CORRECT_M,
-                box_size=2,
-                border=4,
-            )
-            my_qr.add_data(atari_file)
-            qr_image = my_qr.make_image()
-            img = ImageTk.PhotoImage(qr_image)
-            save_button = Button(window, text="Save file: ", fg='blue', command=save_a26_file)
-            save_button.place(x=80, y=60)
-            panel = Label(window, image=img)
-            panel.image = img
-            panel.place(x=0, y=90)
+            pyqrcode.create(open(current_a26_file, "rb"), error='L', version=40, mode='binary', encoding=None)
+            # atari_file = open(current_a26_file, mode='rb').read()
+            # my_qr = qrcode.QRCode(
+            #     version=40,
+            #     error_correction=qrcode.constants.ERROR_CORRECT_M,
+            #     box_size=2,
+            #     border=4,
+            # )
+            # my_qr.add_data(atari_file)
+            # qr_image = my_qr.make_image()
+            # img = ImageTk.PhotoImage(qr_image)
+            # save_button = Button(window, text="Save file: ", fg='blue', command=save_a26_file)
+            # save_button.place(x=80, y=60)
+            # panel = Label(window, image=img)
+            # panel.image = img
+            # panel.place(x=0, y=90)
 
 
 def play_a26_qr():
     window.import_qr = filedialog.askopenfilename(title="Select file",
                                                   filetypes=((".JPG file:", "*.jpg"), (".BIN file", ".png")))
-    qr_img = cv2.imread(window.import_qr)
-    det = cv2.QRCodeDetector()
-    data, bbox, straight_qrcode = det.detectAndDecode(qr_img)
-    print("Data: ", data, "Bbox: ", bbox, "straight: ", straight_qrcode)
+    reader = zxing.BarCodeReader()
+    barcode = reader.decode(window.import_qr)
+    print(barcode.raw)
+    output_file = open("output.a26", "w")
+    output_file.write(barcode.raw)
+    output_file.close()
 
 
 window.title('A2')
