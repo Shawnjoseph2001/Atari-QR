@@ -27,7 +27,8 @@ def open_a26_file():
         if os.path.getsize(current_a26_file) > 3023872:
             print("This file is too big. Only Atari 2600 games designed for a 2KB cartridge will work.")
         else:
-            pyqrcode.create(open(current_a26_file, "rb"), error='L', version=40, mode='binary', encoding=None)
+            resultCode = pyqrcode.create(open(current_a26_file, "rb"), error='L', version=40, mode='binary')
+            resultCode.png('code.png', scale=1, module_color=[0, 0, 0, 128], background=[0xff, 0xff, 0xcc])
             # atari_file = open(current_a26_file, mode='rb').read()
             # my_qr = qrcode.QRCode(
             #     version=40,
