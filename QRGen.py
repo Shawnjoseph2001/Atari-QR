@@ -1,12 +1,15 @@
 # Python program to generate QR code
 import qrcode
 import os
+from pyzbar.pyzbar import decode
+from bitstring import BitArray
+from PIL import Image as PImage
 from tkmacosx import Button
 from tkinter import *
 from tkinter import filedialog
 from PIL import ImageTk
-import zxing
 import base91
+import base36
 import subprocess
 import cv2
 
@@ -32,7 +35,11 @@ def open_a26_file():
             box_size=2,
             border=4,
         )
+        # qr_header="X/Y/Name/data"
+        # qrh_name=os.path.basename(window.a26_filename)
         qr_string = base91.encode(atari_file)
+        qr_str = base36.loads(atari_file)
+        print(qr_str)
         my_qr.add_data(qr_string)
         qr_image = my_qr.make_image()
         img = ImageTk.PhotoImage(qr_image)
@@ -46,36 +53,49 @@ def open_a26_file():
 
 def play_a26_qr():
     window.import_qr = filedialog.askopenfilename(title="Select file")
-    reader = zxing.BarCodeReader()
-    barcode = reader.decode(window.import_qr)
-    # print(barcode.raw)
-    converted_file = base91.decode(barcode.raw)
+    converted_file = decode(PImage.open(window.import_qr))[0].data
+    converted_file_st = converted_file.decode("UTF-8")
+    wf = base91.decode(converted_file_st[::1])
     output_file = open("output.a26", "wb")
-    output_file.write(converted_file)
+    output_file.write(wf)
     output_file.close()
     subprocess.run(["stella", "output.a26"])
 
 
 def video_reader():
+    # cam = cv2.VideoCapture(0)
+    # detector = cv2.QRCodeDetector()
+    # loop_cont = True
+    # qr_data = ""
+    # while loop_cont:
+    #     _, img = cam.read()
+    #     data, bbox, _ = detector.detectAndDecode(img)
+    #     if data:
+    #         print("QR Code detected-->", data)
+    #         qr_data = data
+    #         loop_cont = False
+    #     cv2.imshow("img", img)
+    # cam.release()
+    # cv2.destroyAllWindows()
+    # converted_file = base91.decode(qr_data)
+    # output_file = open("output.a26", "wb")
+    # output_file.write(converted_file)
+    # output_file.close()
+    # subprocess.run(["stella", "output.a26"])
     cam = cv2.VideoCapture(0)
     detector = cv2.QRCodeDetector()
-    loop_cont = True
-    qr_data = ""
-    while loop_cont:
+    while True:
         _, img = cam.read()
         data, bbox, _ = detector.detectAndDecode(img)
         if data:
             print("QR Code detected-->", data)
-            qr_data = data
-            loop_cont = False
+        else:
+            print("QR code not found")
         cv2.imshow("img", img)
+        if cv2.waitKey(1) == ord("Q"):
+            break
     cam.release()
     cv2.destroyAllWindows()
-    converted_file = base91.decode(qr_data)
-    output_file = open("output.a26", "wb")
-    output_file.write(converted_file)
-    output_file.close()
-    subprocess.run(["stella", "output.a26"])
 
 
 window.title('Atari QR')
