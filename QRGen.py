@@ -4,8 +4,8 @@ import os
 from pyzbar.pyzbar import decode
 from bitstring import BitArray
 from PIL import Image as PImage
-from tkmacosx import Button
 from tkinter import *
+from tkmacosx import Button
 from tkinter import filedialog
 from PIL import ImageTk
 import base91
